@@ -1,5 +1,62 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+# Load Huggingface transformers
+from transformers import TFBertModel,  BertConfig, BertTokenizerFast, TFAutoModel
+
+from keras.models import load_model
+
+
+# Load model 
+model = load_model('model.h5')
+
+# Name of the BERT model to use
+model_name = 'bert-base-uncased'
+
+# Max length of tokens
+max_length = 128
+
+# Load transformers config and set output_hidden_states to False
+config = BertConfig.from_pretrained(model_name)
+#config.output_hidden_states = False
+
+# Load BERT tokenizer
+tokenizer = BertTokenizerFast.from_pretrained(pretrained_model_name_or_path = model_name, config = config)
+bert = TFAutoModel.from_pretrained(model_name)
+
+
+
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r"what's", "what is ", text)
+    text = re.sub(r"\'s", " ", text)
+    text = re.sub(r"\'ve", " have ", text)
+    text = re.sub(r"can't", "cannot ", text)
+    text = re.sub(r"n't", " not ", text)
+    text = re.sub(r"i'm", "i am ", text)
+    text = re.sub(r"\'re", " are ", text)
+    text = re.sub(r"\'d", " would ", text)
+    text = re.sub(r"\'ll", " will ", text)
+    text = re.sub(r"\'scuse", " excuse ", text)
+    text = re.sub('\W', ' ', text)
+    text = re.sub('\s+', ' ', text)
+    text = text.strip(' ')
+    return text
+
+def pre_processing_and_predict(txt_data):
+    test_df['comment_text'].map(lambda x : clean_text(x))
+    test_sentences = test_df["comment_text"].fillna("CVxTz").values
+    test_x = tokenizer(
+    text=list(test_sentences),
+    add_special_tokens=True,
+    max_length=max_length,
+    truncation=True,
+    padding=True, 
+    return_tensors='tf',
+    return_token_type_ids = False,
+    return_attention_mask = True,
+    verbose = True)
+    
+    predictions=model.predict(x={'input_ids': test_x['input_ids'], 'attention_mask': test_x['attention_mask']},batch_size=32)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):

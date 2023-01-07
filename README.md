@@ -12,3 +12,5 @@ sklearn
 matplotlib
 nlp
 pyqt5
+
+# Use case
